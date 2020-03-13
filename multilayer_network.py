@@ -179,7 +179,7 @@ def multiple_pass(p_network, p_optim):
 adam_network = Model().to(device)
 adam_optim = torch.optim.Adam(adam_network.parameters(), lr=0.1, betas=(0.9,0.999))
 print("Adam optimizer with same network")
-multiple_pass(adam_network, adam_optim)
+#multiple_pass(adam_network, adam_optim)
 
 def init_weights(m):
     print(m)
@@ -189,10 +189,43 @@ def init_weights(m):
 
 network_init = Model().to(device)
 network_init.apply(init_weights)
-adam_optim = torch.optim.Adam(network_initialized.parameters(), lr=0.01, betas=(0.9, 0.999))
+adam_optim = torch.optim.Adam(network_init.parameters(), lr=0.01, betas=(0.9, 0.999))
 
 print("Running the differently initialized model with Adam Optimizer")
-multiple_pass(network_init, adam_optim)
+#multiple_pass(network_init, adam_optim)
 
 
+# New Model with Batch Norm and ReLU 
 
+class Model_Normalization(nn.Module):
+    def __init__(self):
+        super(Model_Normalization, self).__init__()
+        self.linear_layer_one = torch.nn.Linear(784, 128)
+        self.bn1 = nn.BatchNorm1d(num_features=128)
+        self.linear_layer_two = torch.nn.Linear(128, 64)
+        self.bn2 = nn.BatchNorm1d(num_features=64)
+        self.linear_layer_three = torch.nn.Linear(64, 10)
+        self.bn3 = nn.BatchNorm1d(num_features=10)
+        
+        print("Base model defined")
+
+    def forward(self, X):
+        X_layer1 = F.relu(self.bn1(self.linear_layer_one(X)))
+        X_layer2 = F.relu(self.bn2(self.linear_layer_two(X_layer1)))
+        X_layer3 = self.bn3(self.linear_layer_three(X_layer2))
+        return X_layer3
+
+    def accuracy(self, probs, target):
+    # probs: probability that each image is labeled as 1
+    # target: ground truth label
+        with torch.no_grad():
+            prediction = torch.argmax(probs, axis=-1)
+            acc = torch.sum(prediction == target)
+        return acc.item() / len(target) * 100
+
+network_bn = Model_Normalization().to(device)
+print(network_bn)
+adam_optim = torch.optim.Adam(network_bn.parameters(), lr=0.01, betas=(0.9, 0.999))
+
+print("Running BN network with Adam Opt.")
+multiple_pass(network_bn, adam_optim)
