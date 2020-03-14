@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 from torch import optim
-from tqdm import tdqm_notebook
 import torchvision
+import tqdm
 
 plt.rcParams['figure.figsize'] = (10.0, 8.0) # set default size of plots
 plt.rcParams['image.interpolation'] = 'nearest'
@@ -16,7 +16,7 @@ plt.rcParams['image.cmap'] = 'gray'
 device = torch.device('cuda:0')
 
 transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,),(0.5,))])
-trainset = datasets..MNIST('~/.pytorch/MNIST_data/', download=True, train=True, transform=transform)
+trainset = datasets.MNIST('~/.pytorch/MNIST_data/', download=True, train=True, transform=transform)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=100, shuffle=True)
 
 testset = datasets.MNIST('~/.pytorch/MNIST_data/', download=True, train=False, transform=transform)
@@ -50,7 +50,7 @@ def accuracy(model, dataloader, device):
         correct = 0
         total = 0
         model.eval()
-        for i, data in tqdm_notebook(enumerate(dataloader)):
+        for i, data in tqdm(enumerate(dataloader)):
             image, label = data
             image = image.to(device)
             label = label.to(device)
@@ -65,7 +65,7 @@ def accuracy(model, dataloader, device):
 
 def train_model(model, criterion, optimizer, trainloader, testloader, num_epochs):
     for epoch in range(num_epochs+1):
-        for i, data in tqdm_notebook(enumerate(trainloader)):
+        for i, data in tqdm(enumerate(trainloader)):
             image, label = data
             image = image.to(device)
             label = label.to(device)
@@ -80,9 +80,18 @@ def train_model(model, criterion, optimizer, trainloader, testloader, num_epochs
 
 train_model(MnistNet, criterion, optimizer, trainloader, testloader, num_epochs=5)
 
-#def show(img):
+def show(img):
+    npimg = img.detach.cpu().numpy()
+    plt.imshow(np.transpose(npimg, (1,2,0)), interpolation = 'nearest')
+    plt.savefig('npimg.png',dpi=300)
 
+image, label = next(iter(trainloader))
+random_samples_5 = torch.narrow(image, dim=0, start=0, length=5).to(device)
 
+conv_layers = Mnist.conv1(random_sample_5)
+conv_layers_10 = torch.narrow(conv_layers, dim=1, start=0, length=10)
+
+show(torchvision.utils.make_grid(conv_layers_10.reshape(50,1,26,26), nrow=10, padding=10, pad_value=255))
 
 
 
